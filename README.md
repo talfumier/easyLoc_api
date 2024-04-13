@@ -1,1 +1,0 @@
-# easyloc_api
