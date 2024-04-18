@@ -1,0 +1,5 @@
+{
+  "sql_db_name": "easyLoc",
+  "sql_db_host_dev": "localhost",
+  "mongo_db_connection_dev": "mongodb://user:pwd@localhost/?authSource=easyLoc"
+}
