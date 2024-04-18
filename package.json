@@ -25,7 +25,9 @@
     "nodemon": "^3.1.0"
   },
   "dependencies": {
+    "api-query-params": "^5.4.0",
     "express": "^4.19.2",
+    "joi": "^17.12.3",
     "mongoose": "^8.3.2",
     "sequelize": "^6.37.3",
     "tedious": "^18.1.0"

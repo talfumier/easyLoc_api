@@ -11,5 +11,5 @@ export function routes(app) {
   app.use("/api/vehicles", vehicles);
 
   app.use(errorHandler); //custom error handler middleware > function signature : function (err,req,res,next)
-  app.use(invalidPathHandler); //invalid path handler middleware is eventually triggerered when none of the routes is suitable
+  app.use(invalidPathHandler); //invalid path handler middleware > eventually triggerered when none of the routes matches
 }
