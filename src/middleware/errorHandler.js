@@ -1,5 +1,5 @@
-import {ServerError} from "../models/validation/errors.js";
+import {UnexpectedError} from "../models/validation/errors.js";
 
 export function errorHandler(err, req, res, next) {
-  res.send(new ServerError(err));
+  res.send(new UnexpectedError(err));
 }

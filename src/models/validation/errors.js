@@ -25,8 +25,8 @@ export class Unauthorized extends CustomError {
     );
   }
 }
-export class ServerError extends CustomError {
+export class UnexpectedError extends CustomError {
   constructor(description) {
-    super("A server unexpected error has occured.", 500, description);
+    super("A unexpected error has occured.", "unknown", description);
   }
 }

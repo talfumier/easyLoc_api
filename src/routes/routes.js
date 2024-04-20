@@ -1,4 +1,6 @@
 import express from "express";
+import contracts from "./contracts.js";
+import billings from "./billings.js";
 import customers from "./customers.js";
 import vehicles from "./vehicles.js";
 import {errorHandler} from "../middleware/errorHandler.js";
@@ -7,6 +9,8 @@ import {invalidPathHandler} from "../middleware/invalidPathHandler.js";
 export function routes(app) {
   app.use(express.json()); //express built-in middleware applies to any route
 
+  app.use("/api/contracts", contracts);
+  app.use("/api/billings", billings);
   app.use("/api/customers", customers);
   app.use("/api/vehicles", vehicles);
 

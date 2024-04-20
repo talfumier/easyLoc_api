@@ -20,8 +20,12 @@ const sqlServerConnection = new Sequelize(
 //define models
 const sqlModels = defineSqlServerModels(sqlServerConnection);
 //define relationships
-sqlModels.Billing.belongsTo(sqlModels.Contract);
-sqlModels.Contract.hasMany(sqlModels.Billing);
+sqlModels.Billing.belongsTo(sqlModels.Contract, {
+  foreignKey: "contract_id",
+});
+sqlModels.Contract.hasMany(sqlModels.Billing, {
+  foreignKey: "contract_id",
+});
 
 let flg = 0; //error flag if any
 sqlServerConnection

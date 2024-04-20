@@ -4,8 +4,15 @@ import {routeHandler} from "../middleware/routeHandler.js";
 import {Vehicle, validateVehicle} from "../models/mongoDBModels.js";
 import {BadRequest} from "../models/validation/errors.js";
 import {validateObjectId} from "../models/validation/joiUtilityFunctions.js";
+import {getModels} from "../models/sqlServerModels.js";
 
 const router = express.Router();
+
+let Contract = null;
+function setModel(req, res, next) {
+  Contract = getModels().Contract; //SQL server model
+  next();
+}
 
 router.get(
   "/",
@@ -69,10 +76,18 @@ router.patch(
 );
 router.delete(
   "/:id",
+  setModel,
   routeHandler(async (req, res) => {
     const _id = req.params.id;
     const {error} = validateObjectId(_id);
     if (error) return res.send(new BadRequest(error.details[0].message));
+    const cont = await Contract.findOne({where: {vehicle_id: _id}});
+    if (cont)
+      return res.send(
+        new BadRequest(
+          `Vehicle with id:${_id} cannot be deleted due to related records in 'contracts' table.`
+        )
+      );
     const vcl = await Vehicle.findByIdAndDelete(_id);
     if (!vcl)
       return res.send(new BadRequest(`Vehicle with id:${_id} not found.`));
