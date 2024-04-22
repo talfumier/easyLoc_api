@@ -95,3 +95,28 @@ content-type: application/json
 {
   "contract_id":5
 }
+
+###SEARCH
+GET http://localhost:8000/api/contracts/search/queryparams?customer_id=662129de0824fcaf827b2209&status=ongoing
+###
+GET http://localhost:8000/api/contracts/search/queryparams
+###
+GET http://localhost:8000/api/contracts/search/queryparams?customer_id=662129de0824fcaf827b2209&status=completed
+###
+GET http://localhost:8000/api/contracts/search/queryparams?customer_id=662129de0824fcaf827b2209&status=late
+###
+GET http://localhost:8000/api/contracts/search/queryparams?customer_id=662129de0824fcaf827b2209&vehicle_id=662202ef7ed37b09edce3f4e
+
+
+###GROUP BY
+GET http://localhost:8000/api/contracts/search/groupby/customer
+###
+GET http://localhost:8000/api/contracts/search/groupby/vehicle
+
+
+###
+GET http://localhost:8000/api/billings/search/queryparams?contract_id=7
+###
+GET http://localhost:8000/api/billings/search/groupby/contract?contract_id=7
+###
+GET http://localhost:8000/api/billings/search/groupby/contract?payment=settled

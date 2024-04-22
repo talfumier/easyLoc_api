@@ -1,4 +1,6 @@
 import express from "express";
+import {Op, col, fn, literal, where} from "sequelize";
+import _ from "lodash";
 import {Customer, Vehicle} from "../models/mongoDBModels.js";
 import {routeHandler} from "../middleware/routeHandler.js";
 import {getModels, validateBilling} from "../models/sqlServerModels.js";
@@ -15,7 +17,7 @@ function setModels(req, res, next) {
   Billing = models.Billing;
   next();
 }
-
+/*BASIC*/
 router.get(
   "/",
   setModels,
@@ -105,5 +107,77 @@ router.delete(
     });
   })
 );
-
+/*SEARCH*/
+router.get(
+  "/search/queryparams",
+  setModels,
+  routeHandler(async (req, res) => {
+    let contract_id = null,
+      cond = {};
+    const keys = Object.keys(req.query); //query parameters keys
+    if (keys.indexOf("contract_id") !== -1) {
+      contract_id = req.query.contract_id;
+      const {error} = validateIntegerId(contract_id);
+      if (error) return res.send(new BadRequest(error.details[0].message));
+      cond = {...cond, contract_id};
+    }
+    const bills = await Billing.findAll({
+      where: cond,
+      order: [[col("createdAt"), "DESC"]],
+    });
+    res.send({status: "OK", data: bills});
+  })
+);
+/*GROUP BY*/
+function setHaving(current, value) {
+  return (current.length > 0 ? current + " AND " : "") + value;
+}
+router.get(
+  "/search/groupby/contract",
+  setModels,
+  routeHandler(async (req, res) => {
+    let contract_id = null,
+      payment = null,
+      having = "";
+    const keys = Object.keys(req.query); //query parameters keys
+    if (keys.indexOf("contract_id") !== -1) {
+      contract_id = req.query.contract_id;
+      const {error} = validateIntegerId(contract_id);
+      if (error) return res.send(new BadRequest(error.details[0].message));
+      having = setHaving(having, "max(contract_id)=" + contract_id);
+    }
+    if (keys.indexOf("payment") !== -1)
+      having = setHaving(
+        having,
+        "round(sum(amount)/max(price),2)" +
+          (req.query.payment === "settled"
+            ? ">=1" //full payment
+            : "<1") //no or incomplete payment
+      );
+    const data = await Billing.findAll({
+      attributes: [
+        "contract_id",
+        [fn("max", col("vehicle_id")), "vehicle_id"],
+        [fn("max", col("loc_end_datetime")), "loc_end_datetime"],
+        [fn("max", col("loc_returning_datetime")), "loc_returning_datetime"],
+        [fn("max", col("price")), "price"],
+        [fn("sum", col("amount")), "total_amount_paid"],
+        [literal("round(sum(amount)/max(price),2)"), "ratio_paid/price"],
+      ],
+      group: ["contract_id"],
+      include: [
+        {
+          model: Contract,
+          attributes: [],
+          required: true,
+        },
+      ],
+      having: literal(having ? having : "1=1"), //"1=1" > no condition
+    });
+    res.send({
+      status: "OK",
+      data,
+    });
+  })
+);
 export default router;

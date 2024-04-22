@@ -15,7 +15,7 @@ export function joiSubSchema(base, fields) {
   const baseFields = Object.keys(base.describe().keys);
   if (fields.every((field) => baseFields.includes(field))) {
     //check that incoming fields are all contained in base schema fields
-    const sub = fields.reduce((schema, field) => {
+    return fields.reduce((schema, field) => {
       if (baseFields.indexOf(field) !== -1)
         return schema.concat(
           Joi.object({
@@ -23,7 +23,6 @@ export function joiSubSchema(base, fields) {
           })
         );
     }, Joi.object());
-    return sub;
   }
   return null;
 }

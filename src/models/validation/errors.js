@@ -27,6 +27,6 @@ export class Unauthorized extends CustomError {
 }
 export class UnexpectedError extends CustomError {
   constructor(description) {
-    super("A unexpected error has occured.", "unknown", description);
+    super("An unexpected error has occured.", "unknown", description);
   }
 }

@@ -1,9 +1,13 @@
 import express from "express";
+import {Op, col, fn, literal} from "sequelize";
 import {Customer, Vehicle} from "../models/mongoDBModels.js";
 import {routeHandler} from "../middleware/routeHandler.js";
 import {getModels, validateContract} from "../models/sqlServerModels.js";
 import {BadRequest} from "../models/validation/errors.js";
-import {validateIntegerId} from "../models/validation/joiUtilityFunctions.js";
+import {
+  validateIntegerId,
+  validateObjectId,
+} from "../models/validation/joiUtilityFunctions.js";
 
 const router = express.Router();
 
@@ -12,7 +16,7 @@ function setModel(req, res, next) {
   Contract = getModels().Contract;
   next();
 }
-
+/*BASIC*/
 router.get(
   "/",
   setModel,
@@ -107,5 +111,112 @@ router.delete(
     });
   })
 );
-
+/*SEARCH*/
+router.get(
+  "/search/queryparams",
+  setModel,
+  routeHandler(async (req, res) => {
+    let customer_id = null,
+      vehicle_id = null,
+      cond = {},
+      status = null;
+    const keys = Object.keys(req.query); //query parameters keys
+    if (keys.indexOf("customer_id") !== -1) {
+      customer_id = req.query.customer_id;
+      let error = validateObjectId(customer_id).error;
+      if (error) return res.send(new BadRequest(error.details[0].message));
+      cond = {...cond, customer_id};
+    }
+    if (keys.indexOf("vehicle_id") !== -1) {
+      vehicle_id = req.query.vehicle_id;
+      let error = validateObjectId(vehicle_id).error;
+      if (error) return res.send(new BadRequest(error.details[0].message));
+      cond = {...cond, vehicle_id};
+    }
+    if (keys.indexOf("status") === -1) status = "all";
+    else status = req.query.status;
+    switch (status) {
+      case "ongoing":
+        cond = {...cond, loc_returning_datetime: {[Op.eq]: null}};
+        break;
+      case "completed":
+        cond = {...cond, loc_returning_datetime: {[Op.ne]: null}};
+        break;
+      case "late":
+        cond = {
+          ...cond,
+          [Op.or]: [
+            {
+              [Op.and]: [
+                {loc_returning_datetime: {[Op.eq]: null}},
+                {
+                  loc_end_datetime: {
+                    [Op.lt]: fn(
+                      "DATEADD",
+                      literal("hour"),
+                      -1,
+                      literal("CURRENT_TIMESTAMP")
+                    ),
+                  },
+                },
+              ],
+            },
+            {
+              [Op.and]: [
+                {loc_returning_datetime: {[Op.ne]: null}},
+                {
+                  loc_returning_datetime: {
+                    [Op.gt]: fn(
+                      "DATEADD",
+                      literal("hour"),
+                      1,
+                      col("loc_end_datetime")
+                    ),
+                  },
+                },
+              ],
+            },
+          ],
+        };
+        break;
+      default: //returns all contracts
+    }
+    const conts = await Contract.findAll({
+      where: cond,
+      order: [[col("createdAt"), "DESC"]],
+    });
+    res.send({
+      status: "OK",
+      message: `List of ${status} contract(s) ${
+        customer_id || vehicle_id ? "for " : ""
+      }${customer_id ? "customer id:" + customer_id : ""}${
+        customer_id && vehicle_id ? " and " : ""
+      }${vehicle_id ? "vehicle id:" + vehicle_id : ""} successfully retrieved.`,
+      data: conts,
+    });
+  })
+);
+/*GROUP BY*/
+router.get(
+  "/search/groupby/customer",
+  setModel,
+  routeHandler(async (req, res) => {
+    const conts = await Contract.findAll({
+      attributes: ["customer_id", [fn("count", col("id")), "Nbr of contracts"]],
+      group: ["customer_id"],
+    });
+    res.send({status: "OK", data: conts});
+  })
+);
+router.get(
+  "/search/groupby/vehicle",
+  setModel,
+  routeHandler(async (req, res) => {
+    const conts = await Contract.findAll({
+      attributes: ["vehicle_id", [fn("count", col("id")), "Nbr of contracts"]],
+      group: ["vehicle_id"],
+    });
+    res.send({status: "OK", data: conts});
+  })
+);
 export default router;

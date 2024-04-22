@@ -1,5 +1,6 @@
 import {DataTypes} from "sequelize";
 import Joi from "joi";
+import {addHours} from "date-fns";
 import {
   JoiObjectIdSchema,
   joiSubSchema,
@@ -21,8 +22,30 @@ export function defineSqlServerModels(sqlServerConnection) {
     },
     loc_begin_datetime: {type: DataTypes.DATE, allowNull: false},
     loc_end_datetime: {type: DataTypes.DATE, allowNull: false},
-    loc_returning_datetime: {type: DataTypes.DATE, allowNull: true},
+    loc_returning_datetime: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
     price: {type: DataTypes.DECIMAL, allowNull: true},
+    status: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        const status = [];
+        if (!this.getDataValue("loc_returning_datetime")) {
+          status.push("ongoing");
+          if (new Date() > addHours(this.getDataValue("loc_end_datetime"), 1))
+            status.push("late");
+        } else {
+          status.push("completed");
+          if (
+            this.getDataValue("loc_returning_datetime") >
+            addHours(this.getDataValue("loc_end_datetime"), 1)
+          )
+            status.push("late");
+        }
+        return status;
+      },
+    },
   });
   const Billing = sqlServerConnection.define("billings", {
     id: {type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true},
