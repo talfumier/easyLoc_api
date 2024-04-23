@@ -1,12 +1,12 @@
 import {DataTypes} from "sequelize";
 import Joi from "joi";
-import {addHours} from "date-fns";
+import {addHours, differenceInMinutes} from "date-fns";
 import {
   JoiObjectIdSchema,
   joiSubSchema,
 } from "./validation/joiUtilityFunctions.js";
 
-let models = {Contract: null, Billing: null};
+let models = {Contract: null, Billing: null, connection: null};
 export function getModels() {
   return models;
 }
@@ -46,13 +46,24 @@ export function defineSqlServerModels(sqlServerConnection) {
         return status;
       },
     },
+    car_return_delay_hours: {
+      //number of hours passed the deadline (loc_end_datetime)
+      type: DataTypes.VIRTUAL,
+      get() {
+        const date_limit = this.getDataValue("loc_end_datetime");
+        const date2 = this.getDataValue("loc_returning_datetime")
+          ? this.getDataValue("loc_returning_datetime")
+          : new Date();
+        return (differenceInMinutes(date2, date_limit) / 60).toFixed(2);
+      },
+    },
   });
   const Billing = sqlServerConnection.define("billings", {
     id: {type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true},
     contract_id: {type: DataTypes.INTEGER, allowNull: false},
     amount: {type: DataTypes.DECIMAL, allowNull: true},
   });
-  return (models = {Contract, Billing});
+  return (models = {Contract, Billing, connection: sqlServerConnection});
 }
 export function validateContract(cont, cs = "post") {
   let schema = Joi.object({

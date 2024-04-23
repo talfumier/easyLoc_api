@@ -137,7 +137,6 @@ router.get(
   setModels,
   routeHandler(async (req, res) => {
     let contract_id = null,
-      payment = null,
       having = "";
     const keys = Object.keys(req.query); //query parameters keys
     if (keys.indexOf("contract_id") !== -1) {

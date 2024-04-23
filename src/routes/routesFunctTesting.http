@@ -106,13 +106,18 @@ GET http://localhost:8000/api/contracts/search/queryparams?customer_id=662129de0
 GET http://localhost:8000/api/contracts/search/queryparams?customer_id=662129de0824fcaf827b2209&status=late
 ###
 GET http://localhost:8000/api/contracts/search/queryparams?customer_id=662129de0824fcaf827b2209&vehicle_id=662202ef7ed37b09edce3f4e
+###
+GET http://localhost:8000/api/contracts/search/delays?date1=2024/04/19&date2=2024/04/23
 
 
 ###GROUP BY
 GET http://localhost:8000/api/contracts/search/groupby/customer
 ###
 GET http://localhost:8000/api/contracts/search/groupby/vehicle
-
+###
+GET http://localhost:8000/api/contracts/search/groupby/delay/customer
+###
+GET http://localhost:8000/api/contracts/search/groupby/delay/vehicle
 
 ###
 GET http://localhost:8000/api/billings/search/queryparams?contract_id=7

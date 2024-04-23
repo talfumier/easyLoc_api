@@ -11,9 +11,12 @@ import {
 
 const router = express.Router();
 
-let Contract = null;
+let Contract = null,
+  connection = null; // connection is an instance of sequelize
 function setModel(req, res, next) {
-  Contract = getModels().Contract;
+  const models = getModels();
+  Contract = models.Contract;
+  connection = models.connection;
   next();
 }
 /*BASIC*/
@@ -196,13 +199,49 @@ router.get(
     });
   })
 );
+function isDateValid(dateStr) {
+  // dates format YYYY/MM/DD or MM/DD/YYYY return true
+  if (!dateStr) return false;
+  return !isNaN(new Date(dateStr));
+}
+router.get(
+  "/search/delays",
+  setModel,
+  routeHandler(async (req, res) => {
+    const keys = Object.keys(req.query); //query parameters keys
+    let date1 = keys.indexOf("date1") !== -1 ? req.query.date1 : null;
+    let date2 = keys.indexOf("date2") !== -1 ? req.query.date2 : null;
+    if (!isDateValid(date1) || !isDateValid(date2))
+      return res.send(
+        new BadRequest("Missing date or invalid date format (YYYY/MM/DD).")
+      );
+    date1 = new Date(date1);
+    date2 = new Date(date2);
+
+    const conts = await Contract.findAll({
+      attributes: [
+        [
+          fn("count", col("id")),
+          `n_contracts late ${req.query.date1} - ${req.query.date2}`,
+        ],
+      ],
+      where: {
+        [Op.and]: [
+          {loc_end_datetime: {[Op.between]: [date1, date2]}},
+          {loc_returning_datetime: {[Op.gt]: col("loc_end_datetime")}},
+        ],
+      },
+    });
+    res.send({status: "OK", data: conts});
+  })
+);
 /*GROUP BY*/
 router.get(
   "/search/groupby/customer",
   setModel,
   routeHandler(async (req, res) => {
     const conts = await Contract.findAll({
-      attributes: ["customer_id", [fn("count", col("id")), "Nbr of contracts"]],
+      attributes: ["customer_id", [fn("count", col("id")), "n_contracts"]],
       group: ["customer_id"],
     });
     res.send({status: "OK", data: conts});
@@ -213,7 +252,43 @@ router.get(
   setModel,
   routeHandler(async (req, res) => {
     const conts = await Contract.findAll({
-      attributes: ["vehicle_id", [fn("count", col("id")), "Nbr of contracts"]],
+      attributes: ["vehicle_id", [fn("count", col("id")), "n_contracts"]],
+      group: ["vehicle_id"],
+    });
+    res.send({status: "OK", data: conts});
+  })
+);
+router.get(
+  "/search/groupby/delay/customer",
+  setModel,
+  routeHandler(async (req, res) => {
+    const conts = await connection.query(
+      //run raw SQL queries > safe in this case because the query is not relying on user input
+      `SELECT dt.customer_id,dt.n_delays,dt.n_contracts, ROUND(dt.n_delays*1.00/dt.n_contracts,2) AS avg_nbr_delays 
+        FROM (SELECT c.customer_id, COUNT(c.id) AS n_contracts, 
+        SUM(CASE WHEN(c.loc_returning_datetime>c.loc_end_datetime) THEN 1 ELSE 0 END) AS n_delays
+        FROM contracts c GROUP BY c.customer_id) dt`
+    );
+    res.send({status: "OK", data: conts});
+  })
+);
+router.get(
+  "/search/groupby/delay/vehicle",
+  setModel,
+  routeHandler(async (req, res) => {
+    const conts = await Contract.findAll({
+      attributes: [
+        "vehicle_id",
+        [
+          fn(
+            "avg",
+            literal(
+              "ISNULL(DATEDIFF(minute,loc_end_datetime,loc_returning_datetime),0)"
+            )
+          ),
+          "average_delay_mns",
+        ],
+      ],
       group: ["vehicle_id"],
     });
     res.send({status: "OK", data: conts});
