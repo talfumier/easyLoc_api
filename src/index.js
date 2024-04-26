@@ -3,19 +3,24 @@ import mongoose from "mongoose";
 import express from "express";
 import {defineSqlServerModels} from "./models/sqlServerModels.js";
 import config from "./config/config.json" assert {type: "json"};
-import {environment} from "./config/environment.js";
+import {environment_local} from "./config/environment-local.js";
 import {routes} from "./routes/routes.js";
 
 /*DEALING MITH MS SQL SERVER*/
 const sqlServerConnection = new Sequelize(
   config.sql_db_name,
-  environment.user,
-  environment.userPwd,
+  process.env.Node_ENV === "development"
+    ? environment_local.user
+    : process.env.EASYLOC_DB_USER,
+  process.env.Node_ENV === "development"
+    ? environment_local.userPwd
+    : process.env.EASYLOC_DB_USERPWD,
   {
     dialect: "mssql",
-    host: environment.production
-      ? config.sql_db_host_prod
-      : config.sql_db_host_dev,
+    host:
+      process.env.Node_ENV === "development"
+        ? config.sql_db_host_dev
+        : config.sql_db_host_prod,
     logging: false,
   }
 );
@@ -55,11 +60,11 @@ sqlServerConnection
 /*DEALING WITH MONGO DB*/
 mongoose
   .connect(
-    environment.production
-      ? config.mongo_db_connection_prod
-      : config.mongo_db_connection_dev
-          .replace("user", environment.user)
-          .replace("pwd", environment.userPwd)
+    process.env.NODE_ENV === "development"
+      ? config.mongo_db_connection_dev
+          .replace("user", environment_local.user)
+          .replace("pwd", environment_local.userPwd)
+      : config.mongo_db_connection_prod
   )
   .then(() => {
     console.log("[API]: successfully connected to MongoDB server !");
