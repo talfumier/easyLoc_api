@@ -8,7 +8,7 @@
     "dev": "nodemon src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npm run config && npm run build",
-    "config": "node src/config/generate-env.js"
+    "config": "node src/config/generate-env.cjs"
   },
   "type": "module",
   "repository": {
