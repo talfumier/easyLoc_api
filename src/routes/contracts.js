@@ -263,7 +263,7 @@ router.get(
   setModel,
   routeHandler(async (req, res) => {
     const conts = await connection.query(
-      //run raw SQL queries > safe in this case because the query is not relying on user input
+      //run raw SQL queries > safe in this case because the query is not relying on user input (no risk of SQL injection)
       `SELECT dt.customer_id,dt.n_delays,dt.n_contracts, ROUND(dt.n_delays*1.00/dt.n_contracts,2) AS avg_nbr_delays 
         FROM (SELECT c.customer_id, COUNT(c.id) AS n_contracts, 
         SUM(CASE WHEN(c.loc_returning_datetime>c.loc_end_datetime) THEN 1 ELSE 0 END) AS n_delays

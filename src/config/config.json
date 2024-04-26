@@ -1,5 +1,7 @@
 {
   "sql_db_name": "easyLoc",
   "sql_db_host_dev": "localhost",
-  "mongo_db_connection_dev": "mongodb://user:pwd@localhost/easyLoc?authSource=easyLoc"
+  "sql_db_host_prod": "easyloc.cp8m88koiypg.eu-north-1.rds.amazonaws.com",
+  "mongo_db_connection_dev": "mongodb://user:pwd@localhost/easyLoc?authSource=easyLoc",
+  "mongo_db_connection_prod": "mongodb+srv://user:pwd@cluster0.90ush3t.mongodb.net/easyLoc"
 }

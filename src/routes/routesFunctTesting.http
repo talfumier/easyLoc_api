@@ -1,16 +1,16 @@
 ### CUSTOMERS
 GET http://localhost:8000/api/customers
 ###
-GET http://localhost:8000/api/customers?first_name=/^henrI$/i
+GET http://localhost:8000/api/customers?first_name=/^henrI$/i&sort=-last_name
 ###
 POST http://localhost:8000/api/customers
 content-type: application/json
 
 {
-  "first_name":"Henri", 
-  "last_name":"TALFUMIER",
-  "address":"4, impasse du pigeonnier - 31330 LARRA",
-  "permit_number":"451287PP"
+  "first_name":"xxxx", 
+  "last_name":"yyyyyy",
+  "address":"zzzzzz",
+  "permit_number":"4aaaaa"
 }
 ###
 PATCH http://localhost:8000/api/customers/66212a1b33d48a71897191f6
@@ -122,6 +122,6 @@ GET http://localhost:8000/api/contracts/search/groupby/delay/vehicle
 ###
 GET http://localhost:8000/api/billings/search/queryparams?contract_id=7
 ###
-GET http://localhost:8000/api/billings/search/groupby/contract?contract_id=7
+GET http://localhost:8000/api/billings/search/groupby/contract
 ###
 GET http://localhost:8000/api/billings/search/groupby/contract?payment=settled

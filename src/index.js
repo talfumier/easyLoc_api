@@ -13,7 +13,9 @@ const sqlServerConnection = new Sequelize(
   environment.userPwd,
   {
     dialect: "mssql",
-    host: config.sql_db_host_dev,
+    host: environment.production
+      ? config.sql_db_host_prod
+      : config.sql_db_host_dev,
     logging: false,
   }
 );
@@ -53,9 +55,11 @@ sqlServerConnection
 /*DEALING WITH MONGO DB*/
 mongoose
   .connect(
-    config.mongo_db_connection_dev
-      .replace("user", environment.user)
-      .replace("pwd", environment.userPwd)
+    environment.production
+      ? config.mongo_db_connection_prod
+      : config.mongo_db_connection_dev
+          .replace("user", environment.user)
+          .replace("pwd", environment.userPwd)
   )
   .then(() => {
     console.log("[API]: successfully connected to MongoDB server !");
@@ -67,7 +71,7 @@ mongoose
 const app = express();
 routes(app); //request pipeline including error handling
 
-const port = 8000;
+const port = process.env.PORT || 8000;
 app.listen(port, () => {
   return console.log(
     `Express server is listening at http://localhost:${port} 🚀`
