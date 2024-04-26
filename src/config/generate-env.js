@@ -1,7 +1,10 @@
+import fs from "fs";
+import path from "path";
+
 const setEnv = () => {
-  const fs = require("fs");
+  // const fs = require("fs");
   const writeFile = fs.writeFile;
-  const path = require("path");
+  // const path = require("path");
   const targetPath = path.join(__dirname, "/environment.js");
 
   const configFile = `export const environment = {
