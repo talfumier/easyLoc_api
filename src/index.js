@@ -65,6 +65,8 @@ mongoose
           .replace("user", environment_local.user)
           .replace("pwd", environment_local.userPwd)
       : config.mongo_db_connection_prod
+          .replace("user", process.env.EASYLOC_DB_USER)
+          .replace("pwd", process.env.EASYLOC_DB_USERPWD)
   )
   .then(() => {
     console.log("[API]: successfully connected to MongoDB server !");
