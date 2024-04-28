@@ -43,7 +43,7 @@ sqlServerConnection
     return sqlServerConnection.sync({alter: true}); //returned promise should sync all tables and models, alter=true means update tables where actual model definition has changed
   })
   .then(() => {
-    console.log("SqlServer tables and models successfully synced !");
+    console.log("[API]: SqlServer tables and models successfully synced !");
   })
   .catch((err) => {
     // at this stage, one error has occured
@@ -53,7 +53,7 @@ sqlServerConnection
         msg = "[API]: failed to connect to MS SQL Server !";
         break;
       case 1: //connection succeeded but sync operation has failed
-        msg = "SqlServer tables and models syncing failed !";
+        msg = "[API]: SqlServer tables and models syncing failed !";
     }
     console.log(msg, err.message);
   });
@@ -81,6 +81,6 @@ routes(app); //request pipeline including error handling
 const port = process.env.PORT || 8000;
 app.listen(port, () => {
   return console.log(
-    `Express server is listening at http://localhost:${port} 🚀`
+    `[API]: ${process.env.NODE_ENV} server is listening on port ${port} 🚀`
   );
 });
