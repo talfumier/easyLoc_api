@@ -1,7 +1,7 @@
 import express from "express";
 import aqp from "api-query-params";
 import {routeHandler} from "../middleware/routeHandler.js";
-import {Vehicle, validateVehicle} from "../models/mongoDBModels.js";
+import {Vehicle, validateVehicle} from "../models/mongoDbModels.js";
 import {BadRequest} from "../models/validation/errors.js";
 import {validateObjectId} from "../models/validation/joiUtilityFunctions.js";
 import {getModels} from "../models/sqlServerModels.js";

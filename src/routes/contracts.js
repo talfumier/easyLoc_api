@@ -1,6 +1,6 @@
 import express from "express";
 import {Op, col, fn, literal} from "sequelize";
-import {Customer, Vehicle} from "../models/mongoDBModels.js";
+import {Customer, Vehicle} from "../models/mongoDbModels.js";
 import {routeHandler} from "../middleware/routeHandler.js";
 import {getModels, validateContract} from "../models/sqlServerModels.js";
 import {BadRequest} from "../models/validation/errors.js";
