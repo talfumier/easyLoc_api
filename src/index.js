@@ -3,24 +3,21 @@ import mongoose from "mongoose";
 import express from "express";
 import {defineSqlServerModels} from "./models/sqlServerModels.js";
 import config from "./config/config.json" assert {type: "json"};
-import {environment_local} from "./config/environment-local.js";
+import {environment} from "./config/environment.js";
 import {routes} from "./routes/routes.js";
 
 /*DEALING MITH MS SQL SERVER*/
 const sqlServerConnection = new Sequelize(
   config.sql_db_name,
-  process.env.Node_ENV === "development"
-    ? environment_local.user
-    : process.env.EASYLOC_DB_USER,
-  process.env.Node_ENV === "development"
-    ? environment_local.userPwd
+  !environment.production ? environment.user : process.env.EASYLOC_DB_USER,
+  !environment.production
+    ? environment.userPwd
     : process.env.EASYLOC_DB_USERPWD,
   {
     dialect: "mssql",
-    host:
-      process.env.Node_ENV === "development"
-        ? config.sql_db_host_dev
-        : config.sql_db_host_prod,
+    host: !environment.production
+      ? config.sql_db_host_dev
+      : config.sql_db_host_prod,
     logging: false,
   }
 );
@@ -60,10 +57,10 @@ sqlServerConnection
 /*DEALING WITH MONGO DB*/
 mongoose
   .connect(
-    process.env.NODE_ENV === "development"
+    !environment.production
       ? config.mongo_db_connection_dev
-          .replace("user", environment_local.user)
-          .replace("pwd", environment_local.userPwd)
+          .replace("user", environment.user)
+          .replace("pwd", environment.userPwd)
       : config.mongo_db_connection_prod
           .replace("user", process.env.EASYLOC_DB_USER)
           .replace("pwd", process.env.EASYLOC_DB_USERPWD)
@@ -81,6 +78,8 @@ routes(app); //request pipeline including error handling
 const port = process.env.PORT || 8000;
 app.listen(port, () => {
   return console.log(
-    `[API]: ${process.env.NODE_ENV} server is listening on port ${port} 🚀`
+    `[API]: ${
+      !environment.production ? "development" : "production"
+    } server is listening on port ${port} 🚀`
   );
 });

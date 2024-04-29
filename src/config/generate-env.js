@@ -7,7 +7,7 @@ const setEnv = () => {
   const writeFile = fs.writeFile;
   const path = require("path");
   // const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  const targetPath = path.join(__dirname, "/environment.cjs");
+  const targetPath = path.join(__dirname, "/environment.js");
 
   const configFile = `export const environment = {
     user: '${process.env.EASYLOC_DB_USER}',
