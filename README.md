@@ -1,1 +1,1 @@
-Please visit the 'get_started' in repository root.
+Please visit the 'get_started' folder in the repository root.
