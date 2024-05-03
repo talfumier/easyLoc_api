@@ -14,7 +14,7 @@ const sqlServerConnection = new Sequelize(
     ? environment.userPwd
     : process.env.EASYLOC_DB_USERPWD,
   {
-    dialect: "mssql",
+    dialect: "mysql",
     host: !environment.production
       ? config.sql_db_host_dev
       : config.sql_db_host_prod,
@@ -36,21 +36,21 @@ sqlServerConnection
   .authenticate()
   .then(() => {
     flg += 1; //indicates a successful connection
-    console.log("[API]: successfully connected to MS SQL Server !");
+    console.log("[API]: successfully connected to MySQL server !");
     return sqlServerConnection.sync({alter: true}); //returned promise should sync all tables and models, alter=true means update tables where actual model definition has changed
   })
   .then(() => {
-    console.log("[API]: SqlServer tables and models successfully synced !");
+    console.log("[API]: MySQL tables and models successfully synced !");
   })
   .catch((err) => {
     // at this stage, one error has occured
     let msg = "";
     switch (flg) {
       case 0: //connection failure
-        msg = "[API]: failed to connect to MS SQL Server !";
+        msg = "[API]: failed to connect to MySQL server !";
         break;
       case 1: //connection succeeded but sync operation has failed
-        msg = "[API]: SqlServer tables and models syncing failed !";
+        msg = "[API]: MySQL tables and models syncing failed !";
     }
     console.log(msg, err.message);
   });
