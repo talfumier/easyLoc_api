@@ -9,15 +9,13 @@ import {routes} from "./routes/routes.js";
 /*DEALING MITH MS SQL SERVER*/
 const sqlServerConnection = new Sequelize(
   config.sql_db_name,
-  !environment.production ? environment.user : process.env.EASYLOC_DB_USER,
-  !environment.production
-    ? environment.userPwd
-    : process.env.EASYLOC_DB_USERPWD,
+  environment.production ? process.env.EASYLOC_DB_USER : environment.user,
+  environment.production ? process.env.EASYLOC_DB_USERPWD : environment.userPwd,
   {
     dialect: "mysql",
-    host: !environment.production
-      ? config.sql_db_host_dev
-      : config.sql_db_host_prod,
+    host: environment.production
+      ? config.sql_db_host_prod
+      : config.sql_db_host_dev,
     logging: false,
   }
 );
@@ -30,27 +28,28 @@ sqlModels.Billing.belongsTo(sqlModels.Contract, {
 sqlModels.Contract.hasMany(sqlModels.Billing, {
   foreignKey: "contract_id",
 });
+const db_type = `${environment.production ? "MySQL" : "MS SQL"}`;
 
 let flg = 0; //error flag if any
 sqlServerConnection
   .authenticate()
   .then(() => {
     flg += 1; //indicates a successful connection
-    console.log("[API]: successfully connected to MySQL server !");
+    console.log(`[API]: successfully connected to ${db_type} server !`);
     return sqlServerConnection.sync({alter: true}); //returned promise should sync all tables and models, alter=true means update tables where actual model definition has changed
   })
   .then(() => {
-    console.log("[API]: MySQL tables and models successfully synced !");
+    console.log(`[API]: ${db_type} tables and models successfully synced !`);
   })
   .catch((err) => {
     // at this stage, one error has occured
     let msg = "";
     switch (flg) {
       case 0: //connection failure
-        msg = "[API]: failed to connect to MySQL server !";
+        msg = `[API]: failed to connect to ${db_type} server !`;
         break;
       case 1: //connection succeeded but sync operation has failed
-        msg = "[API]: MySQL tables and models syncing failed !";
+        msg = `${db_type} tables and models syncing failed !`;
     }
     console.log(msg, err.message);
   });
