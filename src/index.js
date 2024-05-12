@@ -6,16 +6,17 @@ import config from "./config/config.json" assert {type: "json"};
 import {environment} from "./config/environment.js";
 import {routes} from "./routes/routes.js";
 
-/*DEALING MITH MS SQL SERVER*/
+/*DEALING MITH MS SQL SERVER (LOCALHOST IN DEVELOPMENT) and MySQL (PRODUCTION)*/
 const sqlServerConnection = new Sequelize(
   config.sql_db_name,
-  environment.production ? process.env.EASYLOC_DB_USER : environment.user,
-  environment.production ? process.env.EASYLOC_DB_USERPWD : environment.userPwd,
+  environment.user,
+  environment.userPwd,
   {
-    dialect: "mysql",
+    dialect: environment.production ? "mysql" : "mssql",
     host: environment.production
       ? config.sql_db_host_prod
       : config.sql_db_host_dev,
+    port: environment.production ? process.env.EASYLOC_DB_PORT : 1433,
     logging: false,
   }
 );
